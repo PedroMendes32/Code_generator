@@ -93,7 +93,7 @@ void create_data_transfer_object_class(const pair<string, vector<tuple<string, s
     file << "   {\n";
     for (const auto& row : table.second)
     {
-        file << "      this."+ get<0>(row) << " = obj." + get<0>(row) << "\n";
+        file << "      this."+ get<0>(row) << " = obj." + get<0>(row) << ";\n";
     }
     file << "   }\n";
     file << "}\n";
@@ -203,7 +203,7 @@ void create_business_entity_class(const pair<string, vector<tuple<string, sql_ty
     file << "    {\n";
     for (const auto& row : table.second)
     {
-        file << "       this." + get<0>(row) << " = obj." + get<0>(row) << "\n";
+        file << "       this." + get<0>(row) << " = obj." + get<0>(row) << ";\n";
     }
     file << "    }\n\n";
 
