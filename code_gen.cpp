@@ -144,7 +144,7 @@ void create_service(const pair<string, vector<tuple<string, sql_types, bool>>>& 
     file << "{ \n";
     file << "    " << table.first << "_DTO GetById(int id) \n";
     file << "    {\n";
-    file << "    }\n";//TODO -> fazer a chamada à business entity (terminar de escrever ela também)
+    file << "    }\n";//TODO -> fazer a chamada Ã  business entity (terminar de escrever ela tambÃ©m)
     file << "    List<" << table.first << "_DTO> GetAll() \n";
     file << "    {\n";
     file << "    }\n";
@@ -172,12 +172,25 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
 
 void create_sql_class(void)
 {
+    string file_name = "Database.cs";
+    ofstream file(file_name);
 
+    file << "using System;\n";
+    file << "using System.Text;\n";
+    file << "using System.Data.SqlClient;\n\n";
+
+    file << "public abstract class Database : IDisposable\n";
+    file << "{\n";
+    file << "   protected SqlConnection conn;\n\n";
+    file << "   public Database()\n";
+    file << "   {\n";
+    file << "      string connectionString; // Coloque aqui a sua string de conexÃ£o\n";
+    file << "      conn = new SqlConnection(connectionString);\n";
+    file << "      conn.Open();\n";
+    file << "   }\n\n";
+    file << "   public void Dispose()\n";
+    file << "   {\n";
+    file << "      conn.Close();\n";
+    file << "   }\n";
+    file << "}\n";
 }
-
-
-/*
-* Adicionar a decoration na classe dto [Serialaizable]
-* e nas propriedades o [DataMember]
-* fazer a classe de conexão com o banco
-*/
