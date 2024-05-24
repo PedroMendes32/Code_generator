@@ -1,31 +1,15 @@
-#include<tuple>
-#include<iostream>
-#include<vector>
-#include<fstream>
-#include<string>
-#include<locale.h>
-
-using namespace std;
-
-enum class sql_types : short int //TODO -> Adicionar mais tipos, pelo menos os princiapis
-{
-    INT, BIGINT, CHAR, VARCHAR, NVARCHAR, DATE, TIME, DATETIME
-};
-
-pair<string, vector<tuple<string, sql_types, bool>>> dados; //TODO -> Talvez bool não seja necessário aqui ou trocar pra map<>
+#include"code_gen.hpp"
 
 tuple<string, sql_types, bool> read_row_from_table(string field_name, sql_types field_type, bool is_null)
 {
     tuple<string, sql_types, bool> row(field_name, field_type, is_null);
     return row;
 }
-/* Método que lê o nome do campo, tipo e nulidade do campo de uma tabela e devolve a estrutura em uma tupla<string,sql_types,bool> do campo*/
 
 void add_on_vector(vector<tuple<string, sql_types, bool>>& table, tuple<string, sql_types, bool> row)
 {
     table.push_back(row);
 }
-/* Método que adiciona um campo da tabela (no formato correto) na tabela*/
 
 pair<string, vector<tuple<string, sql_types, bool>>> create_table(string table_name, const vector<tuple<string, sql_types, bool>>& table)
 {
@@ -38,20 +22,24 @@ void import_header_files(ofstream& file)
     file << "using System.Collections.Generic;\n";
     file << "using System.Linq;\n";
     file << "using System.Text;\n";
-    file << "using System.Threading.Tasks;\n\n";
+    file << "using System.Threading.Tasks;\n";
+    file << "using System.Runtime.Serialization;\n\n";
 }
 
 void create_data_transfer_object_class(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
 {
-    string file_name =  table.first + "_DTO" + ".cs";
+    string file_name = table.first + "_DTO" + ".cs";
     ofstream file(file_name);
 
     import_header_files(file);
 
+    file << "[DataContract]\n";
     file << "public class " << table.first << "_DTO \n";
-    file << "{ " << "\n";
+    file << "{ ";
     for (const auto& row : table.second)
     {
+        file << "\n";
+        file << "   [DataMember]\n";
         file << "   public ";
         switch (get<1>(row))
         {
@@ -95,7 +83,26 @@ void create_data_transfer_object_class(const pair<string, vector<tuple<string, s
     file << "\n   public " << table.first << "_DTO()\n";
     file << "   {\n\n";
     file << "   }\n";
+
+    file << "\n   public " << table.first << "_DTO( "<< table.first <<"_DTO" << " obj " <<")\n";
+    file << "   {\n";
+    for (const auto& row : table.second)
+    {
+        file << "      this."+ get<0>(row) << " = obj." + get<0>(row) << "\n";
+    }
+    file << "   }\n";
     file << "}\n";
+}
+
+void menu(void)
+{
+    cout << "***********************\n";
+    cout << "* .NET Code Generator *\n";
+    cout << "***********************\n";
+    cout << "\n - 1 Gerar classe de conexao com o banco.";
+    cout << "\n - 2 Gerar DTO, Interface, Service, BE e DAO de uma tabela.";
+    cout << "\n - 3 Sair do programa.";
+    cout << "\nDigite a sua escolha: ";
 }
 
 
@@ -106,7 +113,7 @@ void sql_options(void)
     cout << "\n2 - CHAR";
     cout << "\n3 - VARCHAR";
     cout << "\n7 - DATETIME";
-    cout << ": ";
+    cout << "\n: ";
 }
 
 void create_interface(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
@@ -137,7 +144,7 @@ void create_service(const pair<string, vector<tuple<string, sql_types, bool>>>& 
     file << "{ \n";
     file << "    " << table.first << "_DTO GetById(int id) \n";
     file << "    {\n";
-    file << "    }\n";//TODO -> fazer a chamada à business entity (terminar de escrever ela também)
+    file << "    }\n";//TODO -> fazer a chamada � business entity (terminar de escrever ela tamb�m)
     file << "    List<" << table.first << "_DTO> GetAll() \n";
     file << "    {\n";
     file << "    }\n";
@@ -163,35 +170,14 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
 
 }
 
-int main(int agrc, char* argv[])
+void create_sql_class(void)
 {
-    setlocale(LC_ALL, "Portuguese");
 
-    string nome_tabela,fields;
-    short int sql_type,qtd_fields;
-    vector<tuple<string, sql_types, bool>> table;
-    char is_null;
-    cout << "Digite o nome da tabela: ";
-    cin >> nome_tabela;
-    cout << "\nDigite a quantidade de campos da tabela " << nome_tabela << ": ";
-    cin >> qtd_fields;
-    
-    for (short int i = 0; i < qtd_fields; i++)
-    {
-        cout << "\nDigite o nome do " << i+1  << " campo: ";
-        cin >> fields;
-        sql_options();
-        cin >> sql_type;
-        cout << "\nO campo pode ser nulo? (S/N): ";
-        cin >> is_null;
-        add_on_vector(table, read_row_from_table(fields, static_cast<sql_types>(sql_type), is_null == 'S' ? true : false));
-    }
-
-    dados = create_table(nome_tabela,table);
-    create_data_transfer_object_class(dados);
-    create_interface(dados);
-    create_service(dados);
-    
-    return 0;
 }
 
+
+/*
+* Adicionar a decoration na classe dto [Serialaizable]
+* e nas propriedades o [DataMember]
+* fazer a classe de conex�o com o banco
+*/
