@@ -43,32 +43,37 @@ void create_data_transfer_object_class(const pair<string, vector<tuple<string, s
         file << "   public ";
         switch (get<1>(row))
         {
-        case sql_types::INT:
-        {
-            file << "int";
-        }
-        break;
-        case sql_types::BIGINT:
-        {
-            file << "long int";
-        }
-        break;
-        case sql_types::CHAR:
-        {
-            file << "char";
-        }
-        break;
-        case sql_types::VARCHAR:
-        case sql_types::NVARCHAR:
-        {
-            file << "string";
-        }
-        break;
-        case sql_types::DATETIME:
-        {
-            file << "DateTime";
-        }
-        break;
+            case sql_types::INT:
+            {
+                file << "int";
+            }
+            break;
+            case sql_types::BIGINT:
+            {
+                file << "long int";
+            }
+            break;
+            case sql_types::CHAR:
+            {
+                file << "char";
+            }
+            break;
+            case sql_types::VARCHAR:
+            case sql_types::NVARCHAR:
+            {
+                file << "string";
+            }
+            break;
+            case sql_types::DATETIME:
+            {
+                file << "DateTime";
+            }
+            break;
+            case sql_types::DECIMAL:
+            {
+                file << "double";
+            }
+            break;
         }
         if (get<2>(row))
         {
@@ -113,6 +118,7 @@ void sql_options(void)
     cout << "\n2 - CHAR";
     cout << "\n3 - VARCHAR";
     cout << "\n7 - DATETIME";
+    cout << "\n8 - DECIMAL";
     cout << "\n: ";
 }
 
@@ -144,7 +150,176 @@ void create_service(const pair<string, vector<tuple<string, sql_types, bool>>>& 
     file << "{ \n";
     file << "    " << table.first << "_DTO GetById(int id) \n";
     file << "    {\n";
-    file << "    }\n";//TODO -> fazer a chamada à business entity (terminar de escrever ela também)
+    file << "        using ("<< table.first <<"_BE" << " be = new " << table.first <<"_BE())\n";
+    file << "        {\n";
+    file << "            return be.GetById(id);\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    List<" << table.first << "_DTO> GetAll() \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE())\n";
+    file << "        {\n";
+    file << "            return be.GetAll();\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    void Insert(" << table.first << "_DTO item) \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE(item))\n";
+    file << "        {\n";
+    file << "            return be.Insert(item);\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    void Update(" << table.first << "_DTO item) \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE(item))\n";
+    file << "        {\n";
+    file << "            return be.Update(item);\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    void Delete(int id) \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE())\n";
+    file << "        {\n";
+    file << "            return be.Delete(id);\n";
+    file << "        }\n";
+    file << "    }\n";
+    file << "} \n";
+}
+
+void create_business_entity_class(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
+{
+    string file_name = table.first + "_BE" + ".cs";
+    ofstream file(file_name);
+
+    import_header_files(file);
+
+    file << "public class " << table.first << "_BE : " << table.first << "_DTO \n";
+    file << "{ \n";
+    file << "    public " << table.first << "_BE()\n";
+    file << "    {\n\n";
+    file << "    }\n";
+
+    file << "    public " << table.first << "_BE( " << table.first << "_DTO" << " obj " << ")\n";
+    file << "    {\n";
+    for (const auto& row : table.second)
+    {
+        file << "       this." + get<0>(row) << " = obj." + get<0>(row) << "\n";
+    }
+    file << "    }\n\n";
+
+    file << "    " << table.first << "_DTO GetById(int id) \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
+    file << "        {\n";
+    file << "            return dao.GetById(id);\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    List<" << table.first << "_DTO> GetAll() \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
+    file << "        {\n";
+    file << "            return dao.GetAll();\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    void Insert(" << table.first << "_DTO item) \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
+    file << "        {\n";
+    file << "            return dao.Insert(item);\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    void Update(" << table.first << "_DTO item) \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
+    file << "        {\n";
+    file << "            return be.Update(item);\n";
+    file << "        }\n";
+    file << "    }\n\n";
+    file << "    void Delete(int id) \n";
+    file << "    {\n";
+    file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
+    file << "        {\n";
+    file << "            return be.Delete(id);\n";
+    file << "        }\n";
+    file << "    }\n";
+    file << "} \n";
+}
+
+void create_data_access_object(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
+{
+    string file_name = table.first + "_DAO" + ".cs";
+    ofstream file(file_name);
+
+    import_header_files(file);
+
+    file << "public class " << table.first << "_DAO : Database\n";
+    file << "{ \n";
+    file << "    " << table.first << "_DTO GetById(int id) \n";
+    file << "    {\n";
+    file << "        " << table.first << "_DTO result = null;\n";
+    file << "        try\n";
+    file << "        {\n";
+    file << "           using (SqlCommand cmd = new SqlCommand())\n";
+    file << "           {\n";
+    file << "               cmd.Connection = conn;\n";
+    file << "               cmd.CommandText = @\"SELECT * FROM " << table.first << "\n";
+    file << "               WHERE id = @id\";" << "\n\n";
+    file << "               cmd.Parameters.AddWithValue(\"@id\", id);\n";
+    file << "               using (SqlDataReader reader = cmd.ExecuteReader())\n";
+    file << "               {\n";
+    file << "                   if (reader.Read())\n";
+    file << "                   {\n";
+    file << "                       result = new "<< table.first << "_DTO()\n";
+    file << "                       {\n";
+    for (const auto& row : table.second)
+    {
+        file << "                           result." << get<0>(row) << " = ";
+        switch (get<1>(row))
+        {
+            case sql_types::INT:
+            {
+                file << "Convert.ToInt32(reader[\"" << get<0>(row) << "\"]),\n";
+            }
+            break;
+            case sql_types::BIGINT:
+            {
+                file << "Convert.ToInt64(reader[\"" << get<0>(row) << "\"]),\n";
+            }
+            break;
+            case sql_types::CHAR:
+            {
+                file << "Convert.ToChar(reader[\"" << get<0>(row) << "\"]),\n";
+            }
+            break;
+            case sql_types::VARCHAR:
+            case sql_types::NVARCHAR:
+            {
+                file << "Convert.ToString(reader[\"" << get<0>(row) << "\"]),\n";
+            }
+            break;
+            case sql_types::DATETIME:
+            {
+                file << "Convert.ToDateTime(reader[\"" << get<0>(row) << "\"]),\n";
+            }
+            break;
+            case sql_types::DECIMAL:
+            {
+                file << "Convert.ToDouble(reader[\"" << get<0>(row) << "\"]),\n";
+            }
+            break;
+        }
+    }
+    file << "                       };\n";
+    file << "                   }\n";
+    file << "               }\n";
+    file << "           }\n";
+    file << "        }\n";
+    file << "        catch (Exception ex)\n";
+    file << "        {\n";
+    file << "           throw ex;\n";
+    file << "        }\n";
+    file << "        return result;\n";
+    file << "    }\n";
     file << "    List<" << table.first << "_DTO> GetAll() \n";
     file << "    {\n";
     file << "    }\n";
@@ -158,16 +333,6 @@ void create_service(const pair<string, vector<tuple<string, sql_types, bool>>>& 
     file << "    {\n";
     file << "    }\n";
     file << "} \n";
-}
-
-void create_business_entity_class(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
-{
-
-}
-
-void create_data_access_object(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
-{
-
 }
 
 void create_sql_class(void)

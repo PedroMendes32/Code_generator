@@ -7,11 +7,11 @@
 #include<string>
 #include<clocale>
 
-using namespace std; // Não é uma boa prática mas nessa aplicação não faz diferença
+using namespace std; // NÃ£o Ã© uma boa prÃ¡tica mas nessa aplicaÃ§Ã£o nÃ£o faz diferenÃ§a
 
 enum class sql_types : short int //TODO -> Adicionar mais tipos, pelo menos os princiapis
 {
-    INT, BIGINT, CHAR, VARCHAR, NVARCHAR, DATE, TIME, DATETIME
+    INT, BIGINT, CHAR, VARCHAR, NVARCHAR, DATE, TIME, DATETIME, DECIMAL
 };
 
 static pair<string, vector<tuple<string, sql_types, bool>>> dados;
