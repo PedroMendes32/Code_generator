@@ -3,6 +3,7 @@
 #include<vector>
 #include<fstream>
 #include<string>
+#include<locale.h>
 
 using namespace std;
 
@@ -56,44 +57,56 @@ void create_data_transfer_object_class(const pair<string, vector<tuple<string, s
         {
         case sql_types::INT:
         {
-            file << "int ";
+            file << "int";
         }
         break;
         case sql_types::BIGINT:
         {
-            file << "long int ";
+            file << "long int";
         }
         break;
         case sql_types::CHAR:
         {
-            file << "char ";
+            file << "char";
         }
         break;
         case sql_types::VARCHAR:
         case sql_types::NVARCHAR:
         {
-            file << "string ";
+            file << "string";
         }
         break;
         case sql_types::DATETIME:
         {
-            file << "DateTime ";
+            file << "DateTime";
         }
         break;
         }
+        if (get<2>(row))
+        {
+            file << "? ";
+        }
+        else
+        {
+            file << " ";
+        }
         file << get<0>(row) << " { get; set; }\n";
     }
-    file << "}" << "\n";
+    file << "\n   public " << table.first << "_DTO()\n";
+    file << "   {\n\n";
+    file << "   }\n";
+    file << "}\n";
 }
 
 
 void sql_options(void)
 {
-    cout << "Digite o tipo de dado do campo:\n";
-    cout << "0 - INT\n";
-    cout << "2 - CHAR\n";
-    cout << "3 - VARCHAR\n";
-    cout << "7 - DATETIME\n\n";
+    cout << "\nDigite o tipo de dado do campo: ";
+    cout << "\n0 - INT";
+    cout << "\n2 - CHAR";
+    cout << "\n3 - VARCHAR";
+    cout << "\n7 - DATETIME";
+    cout << ": ";
 }
 
 void create_interface(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
@@ -152,25 +165,26 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
 
 int main(int agrc, char* argv[])
 {
+    setlocale(LC_ALL, "Portuguese");
+
     string nome_tabela,fields;
     short int sql_type,qtd_fields;
     vector<tuple<string, sql_types, bool>> table;
-
+    char is_null;
     cout << "Digite o nome da tabela: ";
     cin >> nome_tabela;
     cout << "\nDigite a quantidade de campos da tabela " << nome_tabela << ": ";
     cin >> qtd_fields;
-
+    
     for (short int i = 0; i < qtd_fields; i++)
     {
-        cout << "\nDigite o nome do campo: ";
+        cout << "\nDigite o nome do " << i+1  << " campo: ";
         cin >> fields;
         sql_options();
         cin >> sql_type;
-        add_on_vector(table, read_row_from_table(fields,static_cast<sql_types>(sql_type), false));
-        cout << "\n\n\n";
-        system("pause");
-        system("cls");
+        cout << "\nO campo pode ser nulo? (S/N): ";
+        cin >> is_null;
+        add_on_vector(table, read_row_from_table(fields, static_cast<sql_types>(sql_type), is_null == 'S' ? true : false));
     }
 
     dados = create_table(nome_tabela,table);
