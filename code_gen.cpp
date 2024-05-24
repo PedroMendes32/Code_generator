@@ -148,35 +148,35 @@ void create_service(const pair<string, vector<tuple<string, sql_types, bool>>>& 
 
     file << "public class " << table.first << "_Service : " << "I" << table.first << "_Repository \n";
     file << "{ \n";
-    file << "    " << table.first << "_DTO GetById(int id) \n";
+    file << "    public " << table.first << "_DTO GetById(int id) \n";
     file << "    {\n";
     file << "        using ("<< table.first <<"_BE" << " be = new " << table.first <<"_BE())\n";
     file << "        {\n";
     file << "            return be.GetById(id);\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    List<" << table.first << "_DTO> GetAll() \n";
+    file << "    public List<" << table.first << "_DTO> GetAll() \n";
     file << "    {\n";
     file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE())\n";
     file << "        {\n";
     file << "            return be.GetAll();\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    void Insert(" << table.first << "_DTO item) \n";
+    file << "    public void Insert(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE(item))\n";
     file << "        {\n";
     file << "            return be.Insert(item);\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    void Update(" << table.first << "_DTO item) \n";
+    file << "    public void Update(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE(item))\n";
     file << "        {\n";
     file << "            return be.Update(item);\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    void Delete(int id) \n";
+    file << "    public void Delete(int id) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE())\n";
     file << "        {\n";
@@ -193,7 +193,7 @@ void create_business_entity_class(const pair<string, vector<tuple<string, sql_ty
 
     import_header_files(file);
 
-    file << "public class " << table.first << "_BE : " << table.first << "_DTO \n";
+    file << "public class " << table.first << "_BE : " << table.first << "_DTO, IDisposable \n";
     file << "{ \n";
     file << "    public " << table.first << "_BE()\n";
     file << "    {\n\n";
@@ -207,40 +207,44 @@ void create_business_entity_class(const pair<string, vector<tuple<string, sql_ty
     }
     file << "    }\n\n";
 
-    file << "    " << table.first << "_DTO GetById(int id) \n";
+    file << "    public " << table.first << "_DTO GetById(int id) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
     file << "            return dao.GetById(id);\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    List<" << table.first << "_DTO> GetAll() \n";
+    file << "    public List<" << table.first << "_DTO> GetAll() \n";
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
     file << "            return dao.GetAll();\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    void Insert(" << table.first << "_DTO item) \n";
+    file << "    public void Insert(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
     file << "            return dao.Insert(item);\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    void Update(" << table.first << "_DTO item) \n";
+    file << "    public void Update(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
     file << "            return be.Update(item);\n";
     file << "        }\n";
     file << "    }\n\n";
-    file << "    void Delete(int id) \n";
+    file << "    public void Delete(int id) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
     file << "            return be.Delete(id);\n";
     file << "        }\n";
+    file << "    }\n\n";
+    file << "    public void Dispose() \n";
+    file << "    {\n";
+    file << "        throw new NotImplementedException();\n";
     file << "    }\n";
     file << "} \n";
 }
@@ -254,7 +258,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
 
     file << "public class " << table.first << "_DAO : Database\n";
     file << "{ \n";
-    file << "    " << table.first << "_DTO GetById(int id) \n";
+    file << "    public " << table.first << "_DTO GetById(int id) \n";
     file << "    {\n";
     file << "        " << table.first << "_DTO result = null;\n";
     file << "        try\n";
@@ -273,7 +277,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "                       {\n";
     for (const auto& row : table.second)
     {
-        file << "                           result." << get<0>(row) << " = ";
+        file << "                            " << get<0>(row) << " = ";
         switch (get<1>(row))
         {
             case sql_types::INT:
@@ -320,16 +324,16 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "        }\n";
     file << "        return result;\n";
     file << "    }\n";
-    file << "    List<" << table.first << "_DTO> GetAll() \n";
+    file << "    public List<" << table.first << "_DTO> GetAll() \n";
     file << "    {\n";
     file << "    }\n";
-    file << "    void Insert(" << table.first << "_DTO item) \n";
+    file << "    public void Insert(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "    }\n";
-    file << "    void Update(" << table.first << "_DTO item) \n";
+    file << "    public void Update(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "    }\n";
-    file << "    void Delete(int id) \n";
+    file << "    public void Delete(int id) \n";
     file << "    {\n";
     file << "    }\n";
     file << "} \n";
