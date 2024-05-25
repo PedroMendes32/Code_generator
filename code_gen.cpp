@@ -23,7 +23,8 @@ void import_header_files(ofstream& file)
     file << "using System.Linq;\n";
     file << "using System.Text;\n";
     file << "using System.Threading.Tasks;\n";
-    file << "using System.Runtime.Serialization;\n\n";
+    file << "using System.Runtime.Serialization;\n";
+    file << "using System.Data.SqlClient;\n\n";
 }
 
 void create_data_transfer_object_class(const pair<string, vector<tuple<string, sql_types, bool>>>& table)
@@ -166,21 +167,21 @@ void create_service(const pair<string, vector<tuple<string, sql_types, bool>>>& 
     file << "    {\n";
     file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE(item))\n";
     file << "        {\n";
-    file << "            return be.Insert(item);\n";
+    file << "            be.Insert(item);\n";
     file << "        }\n";
     file << "    }\n\n";
     file << "    public void Update(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE(item))\n";
     file << "        {\n";
-    file << "            return be.Update(item);\n";
+    file << "            be.Update(item);\n";
     file << "        }\n";
     file << "    }\n\n";
     file << "    public void Delete(int id) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_BE" << " be = new " << table.first << "_BE())\n";
     file << "        {\n";
-    file << "            return be.Delete(id);\n";
+    file << "            be.Delete(id);\n";
     file << "        }\n";
     file << "    }\n";
     file << "} \n";
@@ -225,21 +226,21 @@ void create_business_entity_class(const pair<string, vector<tuple<string, sql_ty
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
-    file << "            return dao.Insert(item);\n";
+    file << "            dao.Insert(item);\n";
     file << "        }\n";
     file << "    }\n\n";
     file << "    public void Update(" << table.first << "_DTO item) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
-    file << "            return be.Update(item);\n";
+    file << "            dao.Update(item);\n";
     file << "        }\n";
     file << "    }\n\n";
     file << "    public void Delete(int id) \n";
     file << "    {\n";
     file << "        using (" << table.first << "_DAO" << " dao = new " << table.first << "_DAO())\n";
     file << "        {\n";
-    file << "            return be.Delete(id);\n";
+    file << "            dao.Delete(id);\n";
     file << "        }\n";
     file << "    }\n\n";
     file << "    public void Dispose() \n";
@@ -278,40 +279,8 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     for (const auto& row : table.second)
     {
         file << "                            " << get<0>(row) << " = ";
-        switch (get<1>(row))
-        {
-            case sql_types::INT:
-            {
-                file << "Convert.ToInt32(reader[\"" << get<0>(row) << "\"]),\n";
-            }
-            break;
-            case sql_types::BIGINT:
-            {
-                file << "Convert.ToInt64(reader[\"" << get<0>(row) << "\"]),\n";
-            }
-            break;
-            case sql_types::CHAR:
-            {
-                file << "Convert.ToChar(reader[\"" << get<0>(row) << "\"]),\n";
-            }
-            break;
-            case sql_types::VARCHAR:
-            case sql_types::NVARCHAR:
-            {
-                file << "Convert.ToString(reader[\"" << get<0>(row) << "\"]),\n";
-            }
-            break;
-            case sql_types::DATETIME:
-            {
-                file << "Convert.ToDateTime(reader[\"" << get<0>(row) << "\"]),\n";
-            }
-            break;
-            case sql_types::DECIMAL:
-            {
-                file << "Convert.ToDouble(reader[\"" << get<0>(row) << "\"]),\n";
-            }
-            break;
-        }
+        file << "reader[\"" << get<0>(row) << "\"] != DBNull.Value ? " << return_convert_sql(get<1>(row), get<0>(row));
+        file << " : " << return_default_values_sql(get<1>(row),get<2>(row)) << ",\n";
     }
     file << "                       };\n";
     file << "                   }\n";
@@ -344,9 +313,7 @@ void create_sql_class(void)
     string file_name = "Database.cs";
     ofstream file(file_name);
 
-    file << "using System;\n";
-    file << "using System.Text;\n";
-    file << "using System.Data.SqlClient;\n\n";
+    import_header_files(file);
 
     file << "public abstract class Database : IDisposable\n";
     file << "{\n";
@@ -384,3 +351,85 @@ void create_sql_class(void)
     file << "   }\n";
     file << "}\n";
 }
+
+string return_convert_sql(const sql_types& type,const string& field_name)
+{
+    string str = "";
+    switch (type)
+    {
+        case sql_types::INT:
+        {
+            str = "Convert.ToInt32(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::BIGINT:
+        {
+            str = "Convert.ToInt64(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::CHAR:
+        {
+            str = "Convert.ToChar(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::VARCHAR:
+        case sql_types::NVARCHAR:
+        {
+            str = "Convert.ToString(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::DATETIME:
+        {
+            str = "Convert.ToDateTime(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::DECIMAL:
+        {
+            str = "Convert.ToDouble(reader[\"" + field_name + "\"])";
+        }
+        break;
+    }
+    return str;
+}
+
+string return_default_values_sql(const sql_types& type, const bool& is_null)
+{
+    string str = "";
+    switch (type)
+    {
+        case sql_types::INT:
+        {
+            str = "default(int";
+        }
+        break;
+        case sql_types::BIGINT:
+        {
+            str = "default(long";
+        }
+        break;
+        case sql_types::CHAR:
+        {
+            str = "default(char";
+        }
+        break;
+        case sql_types::VARCHAR:
+        case sql_types::NVARCHAR:
+        {
+            str = "default(string";
+        }
+        break;
+        case sql_types::DATETIME:
+        {
+            str = "default(DateTime";
+        }
+        break;
+        case sql_types::DECIMAL:
+        {
+            str = "default(double";
+        }
+        break;
+    }
+    is_null == true ? str += "?)" : str += ")";
+    return str;
+}
+

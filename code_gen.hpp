@@ -28,4 +28,5 @@ void create_service(const pair<string, vector<tuple<string, sql_types, bool>>>& 
 void create_business_entity_class(const pair<string, vector<tuple<string, sql_types, bool>>>& table);
 void create_data_access_object(const pair<string, vector<tuple<string, sql_types, bool>>>& table);
 void create_sql_class(void);
-
+string return_convert_sql(const sql_types& type, const string& field_name);
+string return_default_values_sql(const sql_types& type, const bool& is_null);
