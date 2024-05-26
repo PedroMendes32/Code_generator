@@ -7,11 +7,32 @@
 #include<string>
 #include<clocale>
 
-using namespace std; // Não é uma boa prática mas nessa aplicação não faz diferença
+using namespace std; // Não é uma boa pratica mas não faz diferença nessa aplicação 
 
-enum class sql_types : short int //TODO -> Adicionar mais tipos, pelo menos os princiapis
+enum class sql_types : short int 
 {
-    INT, BIGINT, CHAR, VARCHAR, NVARCHAR, DATE, TIME, DATETIME, DECIMAL
+    INT,
+    BIGINT,
+    CHAR,
+    VARCHAR,
+    NVARCHAR,
+    DATE,
+    TIME,
+    DATETIME,
+    DECIMAL,
+    SMALLINT,
+    TINYINT,
+    NUMERIC,
+    FLOAT,
+    REAL,
+    TEXT,
+    NTEXT,
+    NCHAR,
+    BIT,
+    BINARY,
+    VARBINARY,
+    IMAGE,
+    UNIQUEIDENTIFIER
 };
 
 static pair<string, vector<tuple<string, sql_types, bool>>> dados;
@@ -29,4 +50,4 @@ void create_business_entity_class(const pair<string, vector<tuple<string, sql_ty
 void create_data_access_object(const pair<string, vector<tuple<string, sql_types, bool>>>& table);
 void create_sql_class(void);
 string return_convert_sql(const sql_types& type, const string& field_name);
-string return_default_values_sql(const sql_types& type, const bool& is_null);
+

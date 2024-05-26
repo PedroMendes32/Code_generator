@@ -51,7 +51,7 @@ void create_data_transfer_object_class(const pair<string, vector<tuple<string, s
             break;
             case sql_types::BIGINT:
             {
-                file << "long int";
+                file << "long";
             }
             break;
             case sql_types::CHAR:
@@ -60,19 +60,66 @@ void create_data_transfer_object_class(const pair<string, vector<tuple<string, s
             }
             break;
             case sql_types::VARCHAR:
+            case sql_types::TEXT:
+            case sql_types::NTEXT:
+            case sql_types::NCHAR:
             case sql_types::NVARCHAR:
             {
                 file << "string";
             }
             break;
+            case sql_types::DATE:
             case sql_types::DATETIME:
             {
                 file << "DateTime";
             }
             break;
+            case sql_types::NUMERIC:
             case sql_types::DECIMAL:
             {
+                file << "decimal";
+            }
+            break;
+            case sql_types::TIME:
+            {
+                file << "TimeSpan";
+            }
+            break;
+            case sql_types::SMALLINT:
+            {
+                file << "short";
+            }
+            break;
+            case sql_types::TINYINT:
+            {
+                file << "byte";
+            }
+            break;
+            case sql_types::FLOAT:
+            {
                 file << "double";
+            }
+            break;
+            case sql_types::REAL:
+            {
+                file << "float";
+            }
+            break;
+            case sql_types::BIT:
+            {
+                file << "bool";
+            }
+            break;
+            case sql_types::BINARY:
+            case sql_types::VARBINARY:
+            case sql_types::IMAGE:
+            {
+                file << "byte[]";
+            }
+            break;
+            case sql_types::UNIQUEIDENTIFIER:
+            {
+                file << "Guid";
             }
             break;
         }
@@ -114,12 +161,29 @@ void menu(void)
 
 void sql_options(void)
 {
-    cout << "\nDigite o tipo de dado do campo: ";
-    cout << "\n0 - INT";
-    cout << "\n2 - CHAR";
-    cout << "\n3 - VARCHAR";
-    cout << "\n7 - DATETIME";
-    cout << "\n8 - DECIMAL";
+    cout << "\nDigite o tipo de dado SQL do campo: ";
+    cout << "\n0  - INT";
+    cout << "\n1  - BIGINT";
+    cout << "\n2  - CHAR";
+    cout << "\n3  - VARCHAR";
+    cout << "\n4  - NVARCHAR";
+    cout << "\n5  - DATE";
+    cout << "\n6  - TIME";
+    cout << "\n7  - DATETIME";
+    cout << "\n8  - DECIMAL";
+    cout << "\n9  - SMALLINT";
+    cout << "\n10 - TINYINT";
+    cout << "\n11 - NUMERIC";
+    cout << "\n12 - FLOAT";
+    cout << "\n13 - REAL";
+    cout << "\n14 - TEXT";
+    cout << "\n15 - NTEXT";
+    cout << "\n16 - NCHAR";
+    cout << "\n17 - BIT";
+    cout << "\n18 - BINARY";
+    cout << "\n19 - VARBINARY";
+    cout << "\n20 - IMAGE";
+    cout << "\n21 - UNIQUEIDENTIFIER";
     cout << "\n: ";
 }
 
@@ -269,7 +333,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "           {\n";
     file << "               cmd.Connection = conn;\n";
     file << "               cmd.CommandText = @\"SELECT * FROM " << table.first << "\n";
-    file << "               WHERE id = @id\"; //Implemente sua lógica aqui!" << "\n\n";
+    file << "               WHERE id = @id\"; //Implemente sua logica aqui!" << "\n\n";
     file << "               cmd.Parameters.AddWithValue(\"@id\", id);\n";
     file << "               using (SqlDataReader reader = cmd.ExecuteReader())\n";
     file << "               {\n";
@@ -281,7 +345,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     {
         file << "                            " << get<0>(row) << " = ";
         file << "reader[\"" << get<0>(row) << "\"] != DBNull.Value ? " << return_convert_sql(get<1>(row), get<0>(row));
-        file << " : " << return_default_values_sql(get<1>(row),get<2>(row)) << ",\n";
+        file << " : " << "default" << ", \n";
     }
     file << "                       };\n";
     file << "                   }\n";
@@ -296,7 +360,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "    }\n\n";
     file << "    public List<" << table.first << "_DTO> GetAll() \n";
     file << "    {\n";
-    file << "        List<" << table.first << "_DTO> result = null;\n";
+    file << "        List<" << table.first << "_DTO> result = new List<"<< table.first <<"_DTO>(); \n";
     file << "        try\n";
     file << "        {\n";
     file << "           using (SqlCommand cmd = new SqlCommand())\n";
@@ -313,7 +377,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     {
         file << "                            " << get<0>(row) << " = ";
         file << "reader[\"" << get<0>(row) << "\"] != DBNull.Value ? " << return_convert_sql(get<1>(row), get<0>(row));
-        file << " : " << return_default_values_sql(get<1>(row), get<2>(row)) << ",\n";
+        file << " : " << "default" << ",\n";
     }
     file << "                       });\n";
     file << "                   }\n";
@@ -354,7 +418,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     }
     for (const auto& row : table.second)
     {
-        file << "               cmd.Parameters.AddWithValue(\"@"<< get<0>(row) << "\", item." << get<0>(row) << " != null ? item." << get<0>(row) << " : " << return_default_values_sql(get<1>(row),get<2>(row)) << "); \n";
+        file << "               cmd.Parameters.AddWithValue(\"@"<< get<0>(row) << "\", item." << get<0>(row) << " != null ? item." << get<0>(row) << " : " << "default" << "); \n";
     }
     file << "               cmd.ExecuteNonQuery();\n";
     file << "           }\n";
@@ -381,11 +445,11 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
         else  file << "\n";
         i++;
     }
-    file << "               WHERE 1 = 1\";// Implemente sua lógica aqui! \n\n";
+    file << "               WHERE 1 = 1\";// Implemente sua logica aqui! \n\n";
     file << "               \n";
     for (const auto& row : table.second)
     {
-        file << "               cmd.Parameters.AddWithValue(\"@" << get<0>(row) << "\", item." << get<0>(row) << " != null ? item." << get<0>(row) << " : " << return_default_values_sql(get<1>(row), get<2>(row)) << "); \n";
+        file << "               cmd.Parameters.AddWithValue(\"@" << get<0>(row) << "\", item." << get<0>(row) << " != null ? item." << get<0>(row) << " : " << "default" << "); \n";
     }
     file << "               cmd.ExecuteNonQuery();\n";
     file << "           }\n";
@@ -403,7 +467,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "           {\n";
     file << "               cmd.Connection = conn;\n";
     file << "               cmd.CommandText = @\"DELETE FROM " << table.first << "\n";
-    file << "               WHERE id = @id\"; //Implemente sua lógica aqui!" << "\n\n";
+    file << "               WHERE id = @id\"; //Implemente sua logica aqui!" << "\n\n";
     file << "               cmd.Parameters.AddWithValue(\"@id\", id);\n";
     file << "               cmd.ExecuteNonQuery();\n";
     file << "           }\n";
@@ -481,63 +545,71 @@ string return_convert_sql(const sql_types& type,const string& field_name)
         }
         break;
         case sql_types::VARCHAR:
+        case sql_types::TEXT:
+        case sql_types::NTEXT:
+        case sql_types::NCHAR:
         case sql_types::NVARCHAR:
         {
             str = "Convert.ToString(reader[\"" + field_name + "\"])";
         }
         break;
+        case sql_types::DATE:
         case sql_types::DATETIME:
         {
             str = "Convert.ToDateTime(reader[\"" + field_name + "\"])";
         }
         break;
+        case sql_types::NUMERIC:
         case sql_types::DECIMAL:
         {
+            str = "Convert.ToDecimal(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::TIME:
+        {
+            str = "Convert.ToDateTime(reader[\"" + field_name + "\"]).TimeOfDay";
+        }
+        break;
+        case sql_types::SMALLINT:
+        {
+            str = "Convert.ToInt16(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::TINYINT:
+        {
+            str = "Convert.ToByte(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::FLOAT:
+        {
             str = "Convert.ToDouble(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::REAL:
+        {
+            str = "Convert.ToSingle(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::BIT:
+        {
+            str = "Convert.ToBoolean(reader[\"" + field_name + "\"])";
+        }
+        break;
+        case sql_types::BINARY:
+        case sql_types::VARBINARY:
+        case sql_types::IMAGE:
+        {
+            str = "(byte[])reader[\"" + field_name + "\"]";
+        }
+        break;
+        case sql_types::UNIQUEIDENTIFIER:
+        {
+            str = "(Guid)reader[\"" + field_name + "\"]";
         }
         break;
     }
     return str;
 }
 
-string return_default_values_sql(const sql_types& type, const bool& is_null)
-{
-    string str = "";
-    switch (type)
-    {
-        case sql_types::INT:
-        {
-            str = "default(int";
-        }
-        break;
-        case sql_types::BIGINT:
-        {
-            str = "default(long";
-        }
-        break;
-        case sql_types::CHAR:
-        {
-            str = "default(char";
-        }
-        break;
-        case sql_types::VARCHAR:
-        case sql_types::NVARCHAR:
-        {
-            str = "default(string";
-        }
-        break;
-        case sql_types::DATETIME:
-        {
-            str = "default(DateTime";
-        }
-        break;
-        case sql_types::DECIMAL:
-        {
-            str = "default(double";
-        }
-        break;
-    }
-    is_null == true && (type != sql_types::VARCHAR && type != sql_types::NVARCHAR) ? str += "?)" : str += ")";
-    return str;
-}
+
 
