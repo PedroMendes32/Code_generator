@@ -76,7 +76,7 @@ void create_data_transfer_object_class(const pair<string, vector<tuple<string, s
             }
             break;
         }
-        if (get<2>(row))
+        if (get<2>(row) && (get<1>(row) != sql_types::VARCHAR) && get<1>(row) != sql_types::NVARCHAR)
         {
             file << "? ";
         }
@@ -494,7 +494,7 @@ string return_default_values_sql(const sql_types& type, const bool& is_null)
         }
         break;
     }
-    is_null == true ? str += "?)" : str += ")";
+    is_null == true && (type != sql_types::VARCHAR && type != sql_types::NVARCHAR) ? str += "?)" : str += ")";
     return str;
 }
 
