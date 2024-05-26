@@ -269,7 +269,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "           {\n";
     file << "               cmd.Connection = conn;\n";
     file << "               cmd.CommandText = @\"SELECT * FROM " << table.first << "\n";
-    file << "               WHERE id = @id\";" << "\n\n";
+    file << "               WHERE id = @id\"; //Implemente sua lógica aqui!" << "\n\n";
     file << "               cmd.Parameters.AddWithValue(\"@id\", id);\n";
     file << "               using (SqlDataReader reader = cmd.ExecuteReader())\n";
     file << "               {\n";
@@ -288,7 +288,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "               }\n";
     file << "           }\n";
     file << "        }\n";
-    file << "        catch (Exception ex)\n";
+    file << "        catch (SqlException ex)\n";
     file << "        {\n";
     file << "           throw ex;\n";
     file << "        }\n";
@@ -320,7 +320,7 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "               }\n";
     file << "           }\n";
     file << "        }\n";
-    file << "        catch (Exception ex)\n";
+    file << "        catch (SqlException ex)\n";
     file << "        {\n";
     file << "           throw ex;\n";
     file << "        }\n";
@@ -359,16 +359,59 @@ void create_data_access_object(const pair<string, vector<tuple<string, sql_types
     file << "               cmd.ExecuteNonQuery();\n";
     file << "           }\n";
     file << "        }\n";
-    file << "        catch (Exception ex)\n";
+    file << "        catch (SqlException ex)\n";
     file << "        {\n";
     file << "           throw ex;\n";
     file << "        }\n";
     file << "    }\n\n";
     file << "    public void Update(" << table.first << "_DTO item) \n";
     file << "    {\n";
+    file << "        try\n";
+    file << "        {\n";
+    file << "           using (SqlCommand cmd = new SqlCommand())\n";
+    file << "           {\n";
+    file << "               cmd.Connection = conn;\n";
+    file << "               cmd.CommandText = @\"UPDATE " << table.first << "\n";
+    file << "               SET\n";
+    i = 1;
+    for (const auto& row : table.second)
+    {
+        file << "\t\t\t\t" << get<0>(row) << " = @" << get<0>(row);
+        if (i < count) file << ",\n";
+        else  file << "\n";
+        i++;
+    }
+    file << "               WHERE 1 = 1\";// Implemente sua lógica aqui! \n\n";
+    file << "               \n";
+    for (const auto& row : table.second)
+    {
+        file << "               cmd.Parameters.AddWithValue(\"@" << get<0>(row) << "\", item." << get<0>(row) << " != null ? item." << get<0>(row) << " : " << return_default_values_sql(get<1>(row), get<2>(row)) << "); \n";
+    }
+    file << "               cmd.ExecuteNonQuery();\n";
+    file << "           }\n";
+    file << "        }\n";
+    file << "        catch (SqlException ex)\n";
+    file << "        {\n";
+    file << "           throw ex;\n";
+    file << "        }\n";
     file << "    }\n\n";
     file << "    public void Delete(int id) \n";
     file << "    {\n";
+    file << "        try\n";
+    file << "        {\n";
+    file << "           using (SqlCommand cmd = new SqlCommand())\n";
+    file << "           {\n";
+    file << "               cmd.Connection = conn;\n";
+    file << "               cmd.CommandText = @\"DELETE FROM " << table.first << "\n";
+    file << "               WHERE id = @id\"; //Implemente sua lógica aqui!" << "\n\n";
+    file << "               cmd.Parameters.AddWithValue(\"@id\", id);\n";
+    file << "               cmd.ExecuteNonQuery();\n";
+    file << "           }\n";
+    file << "        }\n";
+    file << "        catch (SqlException ex)\n";
+    file << "        {\n";
+    file << "           throw ex;\n";
+    file << "        }\n";
     file << "    }\n";
     file << "} \n";
 }
